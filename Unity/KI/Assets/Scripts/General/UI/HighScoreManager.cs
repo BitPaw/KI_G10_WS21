@@ -35,7 +35,16 @@ public class HighScoreManager : MonoBehaviour {
         if (topIndividuals == null)
             return;
         Debug.Log("Setting High Scores");
-        int length = Mathf.Min(10, topIndividuals[0].GeneSequence.Length);
+
+
+        //---<EXPEPION PREVENTION>-------- This here is stupid, fix bug below!
+        if(topIndividuals.Count == 0)
+        {
+            return;
+        }
+        //-------------------------------
+
+        int length = Mathf.Min(10, topIndividuals[0].GeneSequence.Length); // [BitPaw] TODO: ERROR: Null ponter exeption not handled!!!
         for(int i = 0; i < 10 && i<topIndividuals.Count; i++)
         {
             instance.highScores[i].text = i + 1 + ": " + topIndividuals[i].geneSequence.Substring(0, length) + " - " + topIndividuals[i].fitnessValue;

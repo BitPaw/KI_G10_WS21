@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class DummyTerminator : ITerminator
 {
@@ -9,7 +6,7 @@ public class DummyTerminator : ITerminator
 
     public bool JudgementDay(GenerationDB.Generation generation)
     {
-        if (UnityEngine.Random.value < chucksWrath)
+        if (Random.value < chucksWrath)
         {
             Debug.Log("The end is now.");
             return true;
