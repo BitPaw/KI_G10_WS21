@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Settings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" CarInstances="50" GenerationSize="200" SequenceLength="10" GeneDuration="10">
+<Settings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" CarInstances="100" GenerationSize="100" SequenceLength="100" GeneDuration="10">
   <FileLocation>settings.xml</FileLocation>
   <Genes>
     <string>GeneA</string>
@@ -17,34 +17,36 @@
   </SelectedGenes>
   <Initializers>
     <string>AInit</string>
+    <string>InitializerBitPaw</string>
     <string>RandomInitializer</string>
   </Initializers>
-  <SelectedInitializer>RandomInitializer</SelectedInitializer>
+  <SelectedInitializer>InitializerBitPaw</SelectedInitializer>
   <FitnessFunctions>
     <string>DummyFitness</string>
     <string>FittnessHexClaw</string>
   </FitnessFunctions>
-  <SelectedFitnessFunction>DummyFitness</SelectedFitnessFunction>
+  <SelectedFitnessFunction>FittnessHexClaw</SelectedFitnessFunction>
   <Selectors>
     <string>DummySelector</string>
-    <string>SelectorBitPaw</string>
+    <string>SelectorDecisionBitPaw</string>
+    <string>SelectorRandomBitPaw</string>
   </Selectors>
-  <SelectedSelector>DummySelector</SelectedSelector>
+  <SelectedSelector>SelectorDecisionBitPaw</SelectedSelector>
   <Recombiners>
     <string>DummyRecombiner</string>
-    <string>RecombinerBitPaw</string>
     <string>RecombinerCrossoverBitPaw</string>
+    <string>RecombinerWeaveBitPaw</string>
   </Recombiners>
-  <SelectedRecombiner>DummyRecombiner</SelectedRecombiner>
+  <SelectedRecombiner>RecombinerCrossoverBitPaw</SelectedRecombiner>
   <Mutators>
     <string>DummyMutator</string>
     <string>MutatorBitPaw</string>
   </Mutators>
-  <SelectedMutator>DummyMutator</SelectedMutator>
+  <SelectedMutator>MutatorBitPaw</SelectedMutator>
   <Terminators>
     <string>DummyTerminator</string>
     <string>TerminatorBitPaw</string>
     <string>TestTerm</string>
   </Terminators>
-  <SelectedTerminator>TestTerm</SelectedTerminator>
+  <SelectedTerminator>DummyTerminator</SelectedTerminator>
 </Settings>

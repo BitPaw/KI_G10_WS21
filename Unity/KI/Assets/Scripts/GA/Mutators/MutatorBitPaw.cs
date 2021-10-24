@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace GA.Mutators
@@ -8,8 +7,8 @@ namespace GA.Mutators
     {
         private List<char> geneIDs = new List<char>();
 
-        public bool UseMutation { get; set; }
-        public float MutationThreshhold { get; set; }
+        public bool UseMutation { get; set; } = true;
+        public float MutationChangse { get; set; } = 0.1f;
 
         public void AssignGene(char geneID)
         {
@@ -23,23 +22,21 @@ namespace GA.Mutators
 
             for (int geneIndex = 0; geneIndex < length; geneIndex++)
             {
-                char geneA = original[geneIndex];
-                char geneB = geneIDs[geneIndex];
+                char mutatedGene = original[geneIndex];                    
 
-                if(UseMutation)
+                if (UseMutation)
                 {
-                    float changse = UnityEngine.Random.value;
-                    bool mutate = changse >= MutationThreshhold;
+                    bool mutate = Random.value <= MutationChangse; 
 
                     if(mutate)
                     {
-                        result[geneIndex] = geneB;
+                        int randomIndex = Random.Range(0, geneIDs.Count);
+
+                        mutatedGene = geneIDs[randomIndex];
                     }                   
                 }
-                else
-                {
-                    result[geneIndex] = geneA;
-                }                
+
+                result[geneIndex] = mutatedGene;
             }
 
             return new string(result);

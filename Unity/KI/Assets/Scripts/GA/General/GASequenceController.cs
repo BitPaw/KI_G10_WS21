@@ -284,7 +284,7 @@ public class GASequenceController : MonoBehaviour {
             List<string> parents = selector.SelectFromGeneration(generations.CurrentGeneration);
             List<string> children = new List<string>();
             Debug.Log("Recombining using " + recombiner.GetType().Name);
-            for(int i = 0; i < parents.Count;)
+            for(int i = 0; i < parents.Count && (parents.Count % 2 == 0);) // [BitPaw] ERROR: (parents.Count % 2 == 0) added- Unitentional Crash
             {
                 children.Add(recombiner.Combine(parents[i++], parents[i++]));
             }
