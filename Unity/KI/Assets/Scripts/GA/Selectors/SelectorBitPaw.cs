@@ -1,30 +1,34 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace GA.Selectors
 {
     class SelectorBitPaw : ISelector
     {
+        /// <summary>
+        /// 1.0f = Take All<para/>
+        /// 0.5f = Take Half<para/>
+        /// 0.2f = Take Top 20%<para/>
+        /// 0.0f = Take none<para/>
+        /// </summary>
         public float FitnessThreshhold { get; set; } = 0.5f;
 
         public List<string> SelectFromGeneration(GenerationDB.Generation parentGeneration)
         {
-            List<string> superAwesomeNewGen = new List<string>();
-            Individual bestScore = parentGeneration.Fittest;
-            Individual worstScore = parentGeneration.;
-            float currentMaximumScore = bestScore.Fitness;
-            float currentMinimumScore = 0;
+            int amountOfIndividuals = parentGeneration.individuals.Count;
+            int amountOfIndividualsToTake = (int)Math.Floor(amountOfIndividuals * FitnessThreshhold);
+            List<string> nextGeneration = new List<string>(amountOfIndividualsToTake);           
+           
+            parentGeneration.Sort();
 
-            foreach (Individual ind in parentGeneration.Individuals)
+            for (int i = 0; i < amountOfIndividualsToTake; i++)
             {
-                bool shouldBeSelected = ind.Fitness >= FitnessThreshhold;
+                Individual individual = parentGeneration.Individuals[i];
 
-                if (shouldBeSelected)
-                {
-                    superAwesomeNewGen.Add(ind.GeneSequence);
-                }
+                nextGeneration.Add(individual.GeneSequence);
             }
 
-            return superAwesomeNewGen;
+            return nextGeneration;
         }
     }
 }
