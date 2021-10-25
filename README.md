@@ -7,7 +7,7 @@
 | Jona Siebel | 11141394 | AI |
 | Dennis Goßler | 11140150 | AI |
 | Thomas Donst | 11138843 | AI | 
-| Patrick Schuster | 111? | AI | 
+| Patrick Schuster | 11126452 | AI | 
 
 ## Bilder
 
