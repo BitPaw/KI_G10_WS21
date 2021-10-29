@@ -25,7 +25,7 @@ public class InitDG : IInitializer
         {
             Individual individual = new Individual();
 
-            for (int j = 0; j < individualSize; j++)
+            for (int j = 0; j < individualSize -1; j++)
             {
                 var deployBreaks = j > individualSize - (individualSize / 5);
 
@@ -34,6 +34,9 @@ public class InitDG : IInitializer
                 else
                     individual.geneSequence += GetRandomGene();
             }
+
+            individual.geneSequence += "F";
+
             Debug.Log(individual.geneSequence);
             list.Add(individual);
         }

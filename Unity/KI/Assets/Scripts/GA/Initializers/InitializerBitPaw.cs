@@ -24,13 +24,15 @@ namespace GA.Initializers
             {
                 Individual individual = new Individual();
 
-                for (int i = 0; i < individualSize; i++)
+                for (int i = 0; i < individualSize -1; i++)
                 {
                     bool forward = Random.value < ForwardChangsePercantage;
                     char gene = forward  ? 'B' : 'C'; // A=Reverse, B=Forward, C=Left, D=Right, E=Break
 
                     generatedSequence[i] = gene;
                 }
+
+                generatedSequence[individualSize-1] = 'F';
 
                 individual.GeneSequence = new string(generatedSequence);
 

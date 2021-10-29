@@ -22,7 +22,7 @@ public class MutatorDG : IMutator
 
         for (int i = 0; i < randomizer.Next(4); i++)
         {
-            var mutatePosition = randomizer.Next(original.Length);
+            var mutatePosition = randomizer.Next(original.Length - (original.Length / 5));
 
             tempString = tempString.Remove(mutatePosition, 1).Insert(mutatePosition, GetRandomGene());
         }
