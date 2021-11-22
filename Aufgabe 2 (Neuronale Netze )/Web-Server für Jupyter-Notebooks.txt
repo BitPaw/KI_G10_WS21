@@ -1,0 +1,1 @@
+https://ilias.th-koeln.de/ilias.php?baseClass=ilLinkResourceHandlerGUI&ref_id=2078564&cmd=calldirectlink
