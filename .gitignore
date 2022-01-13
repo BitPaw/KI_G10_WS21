@@ -7,6 +7,7 @@ Aufgabe 3 (Monte Carlo Lokalisierung)/KI3/Library/*
 Aufgabe 3 (Monte Carlo Lokalisierung)/KI3/Logs/*
 Aufgabe 3 (Monte Carlo Lokalisierung)/KI3/Temp/*
 */Library/*
+Aufgabe 3 (Monte Carlo Lokalisierung)/KI3/obj/Debug/*
 */[Ll]ibrary/*
 */[Tt]emp/*
 */[Oo]bj/*
@@ -79,3 +80,4 @@ crashlytics-build.properties
 
 Unity/KI/Assets/settings.xml
 Aufgabe 3 (Monte Carlo Lokalisierung)/KI3/UserSettings/EditorUserSettings.asset
+*.txt
