@@ -22,9 +22,7 @@ public class ParticleFilterDonst : MonoBehaviour
         if (!cs.robotReady) return;
 
         List<int> ghostWeights = EvaluateGhostDistances();
-
-        Move();
-
+        MoveObjects();
         List<int> bestWeights = SelectBestWeights(ghostWeights);
         ChangeGhostLocations(bestWeights);
 
@@ -38,31 +36,65 @@ public class ParticleFilterDonst : MonoBehaviour
 
     private List<int> EvaluateGhostDistances()
     {
-        float robotDistance = cs.robot.Scan();
-        List<float> ghostDistances = cs.ghosts
+        float robotDistance = MeasureRobotDistance();
+        List<float> ghostDistances = MeasureGhostDistances();
+
+        List<float> weights = CalculateDifferences(robotDistance, ghostDistances);
+        weights = NormalizeValues(weights);
+        
+        List<int> probabilities = ToProbabilities(weights);
+        
+        return probabilities;
+    }
+
+    private List<float> CalculateDifferences(float robot, List<float> ghosts)
+    {
+        return ghosts
+            .Select(ghostDistance => Math.Abs(robot - ghostDistance))
+            .ToList();
+    }
+
+    private List<float> NormalizeValues(List<float> values)
+    {
+        float sum = values.Sum();
+
+        return values.Select(w => w / sum).ToList();
+    }
+
+    private List<int> ToProbabilities(List<float> values)
+    {
+        float min = values.Min();
+        float max = values.Max();
+
+        return values
+            .Select(value => (value - min) / (max - min))
+            .Select(prob => prob >= 0.99f ? 99 : (int) (prob * 100))
+            .ToList();
+    }
+
+    private float MeasureRobotDistance()
+    {
+        return cs.robot.Scan();
+    }
+
+    private List<float> MeasureGhostDistances()
+    {
+        return cs.ghosts
             .Select(g => g.GetDistance() < 200 ? g.GetDistance() : 200)
             .ToList();
-
-        List<float> weights = ghostDistances
-            .Select(ghostDistance => Math.Abs(1 / (robotDistance - ghostDistance)))
-            .ToList();
-        float min = weights.Min(w => w);
-        float max = weights.Max(w => w);
-
-        List<int> normalizedWeights = weights.Select(value =>
-            (int) ((value - min) / (max - min) * 100)).ToList();
-        return normalizedWeights;
     }
 
     private List<int> SelectBestWeights(List<int> weights)
     {
         Random random = new Random();
         List<int> indexes = new List<int>();
+        int chance;
         int index = 0;
 
         foreach (var weight in weights)
         {
-            if (weight <= random.Next(0, 101))
+            chance = random.Next(1, 101);
+            if (chance <= weight)
                 indexes.Add(index);
             index++;
         }
@@ -70,7 +102,7 @@ public class ParticleFilterDonst : MonoBehaviour
         return indexes;
     }
 
-    private void Move()
+    private void MoveObjects()
     {
         if (cs.robot.Scan() < 2f)
         {
@@ -123,5 +155,11 @@ public class ParticleFilterDonst : MonoBehaviour
         float y = 48 - oldY;
         return Tuple.Create(x, y);
     }
-    
+
+    private void MarkChosenGhosts(List<int> chosenGhosts)
+    {
+        // For test purposes
+        cs.ghosts.ForEach(g => g.ChangeColor(Color.red)); 
+        chosenGhosts.ForEach(i => cs.ghosts[i].ChangeColor(Color.blue));
+    }
 }
