@@ -17,7 +17,26 @@ public class ParticleFilterDonst : MonoBehaviour
         cs = controllScript;
     }
 
-    private List<float> EvaluateGhostDistances()
+    public void Execute()
+    {
+        if (!cs.robotReady) return;
+
+        List<int> ghostWeights = EvaluateGhostDistances();
+
+        Move();
+
+        List<int> bestWeights = SelectBestWeights(ghostWeights);
+        ChangeGhostLocations(bestWeights);
+
+        cs.robotReady = false;
+    }
+
+    private void ChangeGhostLocations(List<int> bestWeights)
+    {
+        // throw new NotImplementedException();
+    }
+
+    private List<int> EvaluateGhostDistances()
     {
         float robotDistance = cs.robot.Scan();
         List<float> ghostDistances = cs.ghosts
@@ -30,35 +49,25 @@ public class ParticleFilterDonst : MonoBehaviour
         float min = weights.Min(w => w);
         float max = weights.Max(w => w);
 
-        return weights.Select(value => (value - min) / (max - min)).ToList();
+        List<int> normalizedWeights = weights.Select(value => 
+            (int) ((value - min) / (max - min) * 100)).ToList();
+        return normalizedWeights;
     }
 
-    public void Execute()
+    private List<int> SelectBestWeights(List<int> weights)
     {
-        if (!cs.robotReady) return;
-
-        List<float> ghostWeights = EvaluateGhostDistances();
-
-        Move();
-
-        ColorBestGhosts(ghostWeights, 0.1f, Color.blue);
-
-        cs.robotReady = false;
-    }
-
-    private void ColorBestGhosts(List<float> weights, float threshold, Color color)
-    {
+        Random random = new Random();
         List<int> indexes = new List<int>();
         int index = 0;
 
         foreach (var weight in weights)
         {
-            if (weight >= threshold)
+            if (weight <= random.Next(0, 101))
                 indexes.Add(index);
             index++;
         }
 
-        indexes.ForEach(i => cs.ghosts[i].ChangeColor(color));
+        return indexes;
     }
 
     private void Move()
@@ -79,6 +88,7 @@ public class ParticleFilterDonst : MonoBehaviour
 
     public void CreateDistributedGhosts()
     {
+        // Coordinate(0, 0) represents the middle of the map
         // Width -106 (right) to 106 (left)
         // Height -48 (bottom) to 48 (top)
 
@@ -90,24 +100,23 @@ public class ParticleFilterDonst : MonoBehaviour
         {
             for (int x = 0; x <= MAX_MAP_WIDTH; x += SPACE)
             {
-                degrees = random.Next(0, 361);
-                (float newX, float newY) = TranslateCoordinates(x, y);
-                CreateGhost(newX, newY, degrees);
+                degrees = 96.247f; //random.Next(0, 361);
+                CreateGhost(x, y, degrees);
             }
         }
     }
 
 
-    private void CreateGhost(float x, float y, float rotation)
+    public void CreateGhost(float x, float y, float rotation)
     {
-        cs.Ghostspawner.position = new Vector3(y, 0.57f, x);
+        (float newX, float newY) = TranslateCoordinates(x, y);
+        cs.Ghostspawner.position = new Vector3(newY, 0.57f, newX);
         cs.Ghostspawner.rotation = Quaternion.Euler(0f, rotation, 0f);
         Instantiate(cs.Ghost, cs.Ghostspawner.position, cs.Ghostspawner.rotation);
     }
 
     private Tuple<float, float> TranslateCoordinates(float oldX, float oldY)
     {
-        // Coordinate(0, 0) represents the middle of the map
         float x = 106 - oldX;
         float y = 48 - oldY;
         return Tuple.Create(x, y);

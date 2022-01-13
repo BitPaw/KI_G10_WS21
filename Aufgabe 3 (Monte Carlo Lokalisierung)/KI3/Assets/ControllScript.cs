@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using Random = System.Random;
 
 public class ControllScript : MonoBehaviour
 {
     public List<GhostController> ghosts;
     public RobotController robot;
-    public bool robotReady;
+    public bool robotReady = false;
     public Transform Ghostspawner;
-
+    
     private ParticleFilterDonst particleFilterDonst;
 
     public ControllScript()
@@ -23,11 +20,23 @@ public class ControllScript : MonoBehaviour
     {
         DeRegisterGhost(ghosts[0]);
         particleFilterDonst.CreateDistributedGhosts();
+        
+        // particleFilterDonst.CreateGhost(82f, 48f, 96.247f);
+        // particleFilterDonst.CreateGhost(83f, 48f, 96.247f);
+        // particleFilterDonst.CreateGhost(84f, 48f, 96.247f);
+        // particleFilterDonst.CreateGhost(85f, 48f, 96.247f);
+        // particleFilterDonst.CreateGhost(86f, 48f, 96.247f);
     }
 
     void Update()
     {
         particleFilterDonst.Execute();
+    }
+
+
+    private void CreateGhost(Transform trans)
+    {
+        Instantiate(Ghost, trans.position, trans.rotation);
     }
 
     #region Stuff You Shouldn't Touch
@@ -61,13 +70,6 @@ public class ControllScript : MonoBehaviour
 
     public void RegisterGhost(GhostController ghost)
     {
-        ghosts.Add(ghost);
-    }
-
-    private void RegisterGhost(GhostController ghost, Vector3 position, float rotation)
-    {
-        Ghostspawner.position = position;
-        Ghostspawner.rotation = Quaternion.Euler(0f, rotation, 0f);
         ghosts.Add(ghost);
     }
 
