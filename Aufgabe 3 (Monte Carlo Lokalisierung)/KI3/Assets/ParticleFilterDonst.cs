@@ -22,9 +22,10 @@ public class ParticleFilterDonst : MonoBehaviour
         if (!cs.robotReady) return;
 
         List<int> ghostWeights = EvaluateGhostDistances();
+        List<int> bestGhosts = SelectBestWeights(ghostWeights);
+        ChangeGhostLocations(bestGhosts);
+        HighlightGhosts(bestGhosts); // OPTIONAL: Debugging purposes
         MoveObjects();
-        List<int> bestWeights = SelectBestWeights(ghostWeights);
-        ChangeGhostLocations(bestWeights);
 
         cs.robotReady = false;
     }
@@ -41,9 +42,9 @@ public class ParticleFilterDonst : MonoBehaviour
 
         List<float> weights = CalculateDifferences(robotDistance, ghostDistances);
         weights = NormalizeValues(weights);
-        
+
         List<int> probabilities = ToProbabilities(weights);
-        
+
         return probabilities;
     }
 
@@ -156,10 +157,10 @@ public class ParticleFilterDonst : MonoBehaviour
         return Tuple.Create(x, y);
     }
 
-    private void MarkChosenGhosts(List<int> chosenGhosts)
+    private void HighlightGhosts(List<int> chosenGhosts)
     {
         // For test purposes
-        cs.ghosts.ForEach(g => g.ChangeColor(Color.red)); 
+        cs.ghosts.ForEach(g => g.ChangeColor(Color.red));
         chosenGhosts.ForEach(i => cs.ghosts[i].ChangeColor(Color.blue));
     }
 }
