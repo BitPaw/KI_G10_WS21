@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,31 +11,32 @@ public class RobotController : MonoBehaviour
     private float currentTorque;
     private SensorSuite sensor;
     private Rigidbody rigid;
-    public float startingRotation;
-    public float desiredRotation;
+    private float startingRotation;
+    private float desiredRotation;
     private Vector3 startingPosition;
     private float desiredDistance;
     private float timeOfStart;
     private float timeToEnd;
     private float desiredPower;
     private bool movementDesired = false;
-    public bool rotationDesired = false;
+    private bool rotationDesired = false;
     private bool needsToCrossThreshold = false;
 
-    public float lastFrameRotation = 0;
+    private float lastFrameRotation = 0;
 
     // Start is called before the first frame update
     void Start()
     {
         sensor = GetComponentInChildren<SensorSuite>();
         rigid = GetComponent<Rigidbody>();
-        gameObject.layer = Physics.IgnoreRaycastLayer;
+//        Rotate(-30);
+//        gameObject.layer = Physics.IgnoreRaycastLayer;
         ControllScript.GetInstance().RegisterRobot(this);
         ControllScript.GetInstance().notifyRobotReady();
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         if (rotationDesired)
         {
@@ -78,6 +78,8 @@ public class RobotController : MonoBehaviour
             Time.time > timeOfStart + timeOut)
         {
             movementDesired = false;
+            rigid.velocity = Vector3.zero;
+            rigid.angularVelocity = Vector3.zero;
             ControllScript.GetInstance().notifyRobotReady();
         }
     }

@@ -49,7 +49,7 @@ public class ParticleFilterDonst : MonoBehaviour
         float min = weights.Min(w => w);
         float max = weights.Max(w => w);
 
-        List<int> normalizedWeights = weights.Select(value => 
+        List<int> normalizedWeights = weights.Select(value =>
             (int) ((value - min) / (max - min) * 100)).ToList();
         return normalizedWeights;
     }
@@ -88,10 +88,6 @@ public class ParticleFilterDonst : MonoBehaviour
 
     public void CreateDistributedGhosts()
     {
-        // Coordinate(0, 0) represents the middle of the map
-        // Width -106 (right) to 106 (left)
-        // Height -48 (bottom) to 48 (top)
-
         Random random = new Random();
         const int SPACE = 2;
         float degrees;
@@ -100,7 +96,7 @@ public class ParticleFilterDonst : MonoBehaviour
         {
             for (int x = 0; x <= MAX_MAP_WIDTH; x += SPACE)
             {
-                degrees = 96.247f; //random.Next(0, 361);
+                degrees = random.Next(0, 361);
                 CreateGhost(x, y, degrees);
             }
         }
@@ -117,6 +113,12 @@ public class ParticleFilterDonst : MonoBehaviour
 
     private Tuple<float, float> TranslateCoordinates(float oldX, float oldY)
     {
+        // This function maps a custom coordinate system
+        // into the unity coordinate system.
+        // Examples:
+        //      (0, 0) top left of the map
+        //      (106, 48) center of the map
+        //      (212, 96) bottom right of the map
         float x = 106 - oldX;
         float y = 48 - oldY;
         return Tuple.Create(x, y);

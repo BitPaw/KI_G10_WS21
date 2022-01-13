@@ -8,7 +8,7 @@ public class ControllScript : MonoBehaviour
     public RobotController robot;
     public bool robotReady = false;
     public Transform Ghostspawner;
-    
+
     private ParticleFilterDonst particleFilterDonst;
 
     public ControllScript()
@@ -20,7 +20,7 @@ public class ControllScript : MonoBehaviour
     {
         DeRegisterGhost(ghosts[0]);
         particleFilterDonst.CreateDistributedGhosts();
-        
+
         // particleFilterDonst.CreateGhost(82f, 48f, 96.247f);
         // particleFilterDonst.CreateGhost(83f, 48f, 96.247f);
         // particleFilterDonst.CreateGhost(84f, 48f, 96.247f);

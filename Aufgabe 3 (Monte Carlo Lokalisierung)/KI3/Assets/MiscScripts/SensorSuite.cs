@@ -8,7 +8,9 @@ public class SensorSuite : MonoBehaviour
     public int WonkynessDistributionDampening = 5;
     public bool ScansDeflect = true, FuzzyifyDistances = true, ScansCanFail = true, CanCorrectFailedScans = false;
     private float spread = 90f, degreesPerStep, minDistance;
+
     private int steps = 10;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -23,20 +25,22 @@ public class SensorSuite : MonoBehaviour
     public float GetDistance()
     {
         float minDistance = Range;
-        if(ScansCanFail && Random.value < ProbOfFailedScan)
+        if (ScansCanFail && Random.value < ProbOfFailedScan)
         {
             return minDistance;
         }
+
         minDistance = SingleScan();
         float tmp;
         transform.Rotate(0, -spread / 2f, 0);
-        for(int i = 0; i < steps; i++)
+        for (int i = 0; i < steps; i++)
         {
             tmp = SingleScan();
             if (minDistance > tmp)
                 minDistance = tmp;
             transform.Rotate(0, degreesPerStep, 0);
         }
+
         tmp = SingleScan();
         if (minDistance > tmp)
             minDistance = tmp;
@@ -45,16 +49,18 @@ public class SensorSuite : MonoBehaviour
         {
             minDistance = Fuzzify(minDistance);
         }
+
         return minDistance;
     }
 
     private float Fuzzify(float distance)
     {
-        float adjustment=0;
-        for(int i = 0; i < WonkynessDistributionDampening; i++)
+        float adjustment = 0;
+        for (int i = 0; i < WonkynessDistributionDampening; i++)
         {
             adjustment += Random.value * Wonkyness * 2;
         }
+
         adjustment /= WonkynessDistributionDampening;
         adjustment *= distance;
         distance *= 1 - Wonkyness;
@@ -77,35 +83,32 @@ public class SensorSuite : MonoBehaviour
                     distance = Range;
                 }
             }
+
             if (distance < minDistance)
                 minDistance = distance;
         }
+
         return minDistance;
     }
 
     private void AdjustSpread()
     {
-        degreesPerStep = spread / (float)steps;
+        degreesPerStep = spread / (float) steps;
     }
 
     public float Spread
     {
-        get
-        {
-            return spread;
-        }
+        get { return spread; }
         set
         {
             spread = value;
             AdjustSpread();
         }
     }
+
     public int Steps
     {
-        get
-        {
-            return steps;
-        }
+        get { return steps; }
         set
         {
             steps = value;
