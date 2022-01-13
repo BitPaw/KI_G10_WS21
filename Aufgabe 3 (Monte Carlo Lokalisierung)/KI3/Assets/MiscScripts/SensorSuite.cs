@@ -68,7 +68,7 @@ public class SensorSuite : MonoBehaviour
         minDistance = Range;
         if (Physics.Raycast(transform.position, transform.forward, out hit, Range))
         {
-//            Debug.DrawLine(transform.position, hit.point);
+            Debug.DrawLine(transform.position, hit.point);
             float distance = Vector3.Distance(hit.point, transform.position);
             if (ScansDeflect)
             {

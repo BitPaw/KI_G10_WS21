@@ -1,65 +1,40 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using Random = System.Random;
 
 public class ControllScript : MonoBehaviour
 {
-    private List<GhostController> ghosts;
-    private RobotController robot;
-    private bool robotReady = false;
+    public List<GhostController> ghosts;
+    public RobotController robot;
+    public bool robotReady;
     public Transform Ghostspawner;
+
+    private ParticleFilterDonst particleFilterDonst;
+
+    public ControllScript()
+    {
+        particleFilterDonst = new ParticleFilterDonst(this);
+    }
 
     void Start()
     {
-        CreateGhost(Ghostspawner);
+        DeRegisterGhost(ghosts[0]);
+        particleFilterDonst.CreateDistributedGhosts();
     }
 
     void Update()
     {
-        if (robotReady)
-        {
-            foreach (GhostController ghost in ghosts)
-            {
-                ghost.Move(2);
-                ghost.Rotate(Random.value * 90);
-            }
-            robot.CompareLocations(ghosts[0].GetPosition(), ghosts[0].GetRotation());
-            Debug.Log("Distance according to sensor: " + robot.Scan());
-            GenerateRandomCommand();
-            robotReady = false;
-        }
-    }
-
-    private void GenerateRandomCommand()
-    {
-        int command = (int)(Random.value * 3f);
-        switch (command)
-        {
-            case 0:
-                robot.Move(Random.value * 10, robot.MaxForward);
-                return;
-            case 1:
-                robot.Rotate((Random.value-0.5f) * 180f);
-                return;
-            case 2:
-                robot.Move(Random.value * 10, robot.MaxBackward);
-                return;
-            default:
-                robot.Rotate((Random.value-0.5f) * 180);
-                return;
-        }
-    }
-
-
-
-    private void CreateGhost(Transform trans)
-    {
-        Instantiate(Ghost, trans.position, trans.rotation);
+        particleFilterDonst.Execute();
     }
 
     #region Stuff You Shouldn't Touch
+
     private static ControllScript self;
     public GameObject Ghost;
+
     void Awake()
     {
         if (self)
@@ -83,18 +58,28 @@ public class ControllScript : MonoBehaviour
     {
         this.robot = robot;
     }
+
     public void RegisterGhost(GhostController ghost)
     {
         ghosts.Add(ghost);
     }
+
+    private void RegisterGhost(GhostController ghost, Vector3 position, float rotation)
+    {
+        Ghostspawner.position = position;
+        Ghostspawner.rotation = Quaternion.Euler(0f, rotation, 0f);
+        ghosts.Add(ghost);
+    }
+
     public void DeRegisterGhost(GhostController ghost)
     {
         ghosts.Remove(ghost);
     }
+
     public void notifyRobotReady()
     {
         robotReady = true;
     }
-    #endregion
 
+    #endregion
 }

@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class GhostController : MonoBehaviour
 {
-
     void Start()
     {
         ControllScript.GetInstance().RegisterGhost(this);
@@ -18,9 +17,9 @@ public class GhostController : MonoBehaviour
         }
         catch (System.Exception e)
         {
-
         }
     }
+
     public float GetDistance()
     {
         RaycastHit hit;
@@ -29,12 +28,15 @@ public class GhostController : MonoBehaviour
         {
             distance = Vector3.Distance(hit.point, transform.position);
         }
+
         return distance;
     }
 
     public void Move(float distance)
     {
+        transform.eulerAngles /= 2;
         transform.Translate(transform.forward * distance);
+        transform.eulerAngles *= 2;
     }
 
     public void Rotate(float angle)
@@ -46,8 +48,14 @@ public class GhostController : MonoBehaviour
     {
         return transform.position;
     }
+
     public Vector3 GetRotation()
     {
         return transform.rotation.eulerAngles;
+    }
+
+    public void ChangeColor(Color color)
+    {
+        gameObject.GetComponent<Renderer>().material.color = color;
     }
 }
