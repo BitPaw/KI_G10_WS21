@@ -22,7 +22,7 @@ public class RobotController : MonoBehaviour
     private bool rotationDesired = false;
     private bool needsToCrossThreshold = false;
 
-    private float lastFrameRotation = 0;
+    public float lastFrameRotation = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -163,5 +163,4 @@ public class RobotController : MonoBehaviour
     {
         get { return -maxPower; }
     }
-    
 }

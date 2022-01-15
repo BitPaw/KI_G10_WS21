@@ -58,5 +58,4 @@ public class GhostController : MonoBehaviour
     {
         gameObject.GetComponent<Renderer>().material.color = color;
     }
-    
 }

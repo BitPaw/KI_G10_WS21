@@ -8,7 +8,6 @@ public class ControllScript : MonoBehaviour
     public RobotController robot;
     public bool robotReady = false;
     public Transform Ghostspawner;
-
     private ParticleFilterDonst particleFilterDonst;
 
     public ControllScript()
@@ -19,13 +18,7 @@ public class ControllScript : MonoBehaviour
     void Start()
     {
         DeRegisterGhost(ghosts[0]);
-        particleFilterDonst.CreateDistributedGhosts();
-
-        // particleFilterDonst.CreateGhost(82f, 48f, 96.247f);
-        // particleFilterDonst.CreateGhost(83f, 48f, 96.247f);
-        // particleFilterDonst.CreateGhost(84f, 48f, 96.247f);
-        // particleFilterDonst.CreateGhost(85f, 48f, 96.247f);
-        // particleFilterDonst.CreateGhost(86f, 48f, 96.247f);
+        particleFilterDonst.Prepare();
     }
 
     void Update()
@@ -33,11 +26,11 @@ public class ControllScript : MonoBehaviour
         particleFilterDonst.Execute();
     }
 
-
     private void CreateGhost(Transform trans)
     {
         Instantiate(Ghost, trans.position, trans.rotation);
     }
+
 
     #region Stuff You Shouldn't Touch
 
@@ -84,5 +77,4 @@ public class ControllScript : MonoBehaviour
     }
 
     #endregion
-    
 }

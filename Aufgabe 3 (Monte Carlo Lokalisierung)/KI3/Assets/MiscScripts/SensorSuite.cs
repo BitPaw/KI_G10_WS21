@@ -7,7 +7,7 @@ public class SensorSuite : MonoBehaviour
     public float Range = 2f, DeflectionAngle = 45f, ProbOfFailedScan = .2f, Wonkyness = .4f;
     public int WonkynessDistributionDampening = 5;
     public bool ScansDeflect = true, FuzzyifyDistances = true, ScansCanFail = true, CanCorrectFailedScans = false;
-    private float spread = 90f, degreesPerStep, minDistance;
+    private float spread = 10f, degreesPerStep, minDistance;
 
     private int steps = 10;
 
@@ -115,5 +115,4 @@ public class SensorSuite : MonoBehaviour
             AdjustSpread();
         }
     }
-    
 }

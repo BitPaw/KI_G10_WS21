@@ -17,14 +17,23 @@ public class ParticleFilterDonst : MonoBehaviour
         cs = controllScript;
     }
 
+    public void Prepare()
+    {
+        // TestPrepareStuff(); // Debugging purposes: Comment everything within function function when used
+
+        CreateDistributedGhosts();
+    }
+
+
     public void Execute()
     {
         if (!cs.robotReady) return;
 
+        // TestExecuteStuff(); // Debugging purposes: Comment everything within the function when used, except lines with robotReady
+
         List<int> ghostWeights = EvaluateGhostDistances();
         List<int> bestGhosts = SelectBestWeights(ghostWeights);
         ChangeGhostLocations(bestGhosts);
-        HighlightGhosts(bestGhosts); // OPTIONAL: Debugging purposes
         MoveObjects();
 
         cs.robotReady = false;
@@ -40,10 +49,9 @@ public class ParticleFilterDonst : MonoBehaviour
         float robotDistance = MeasureRobotDistance();
         List<float> ghostDistances = MeasureGhostDistances();
 
-        List<float> weights = CalculateDifferences(robotDistance, ghostDistances);
-        weights = NormalizeValues(weights);
+        List<float> differences = CalculateDifferences(robotDistance, ghostDistances);
 
-        List<int> probabilities = ToProbabilities(weights);
+        List<int> probabilities = Normalize(differences);
 
         return probabilities;
     }
@@ -51,26 +59,23 @@ public class ParticleFilterDonst : MonoBehaviour
     private List<float> CalculateDifferences(float robot, List<float> ghosts)
     {
         return ghosts
-            .Select(ghostDistance => Math.Abs(robot - ghostDistance))
+            .Select(ghostDistance => Math.Abs(robot - ghostDistance - 1))
             .ToList();
     }
 
-    private List<float> NormalizeValues(List<float> values)
+    private List<int> Normalize(List<float> values)
     {
-        float sum = values.Sum();
+        // min should always be 0
+        float min = 0f;
+        // max describes the tolerance between the distances of robot and ghost. 
+        // If the difference exceeds tolerance, then the current probability is set to 0.
+        float max = 10f;
 
-        return values.Select(w => w / sum).ToList();
-    }
-
-    private List<int> ToProbabilities(List<float> values)
-    {
-        float min = values.Min();
-        float max = values.Max();
-
-        return values
-            .Select(value => (value - min) / (max - min))
-            .Select(prob => prob >= 0.99f ? 99 : (int) (prob * 100))
+        List<int> probabilities = values
+            .Select(v => v <= max ? 100 - (int) ((v - min) / (max - min) * 100) : 0)
             .ToList();
+
+        return probabilities;
     }
 
     private float MeasureRobotDistance()
@@ -80,8 +85,10 @@ public class ParticleFilterDonst : MonoBehaviour
 
     private List<float> MeasureGhostDistances()
     {
+        float ceiling = 100;
+
         return cs.ghosts
-            .Select(g => g.GetDistance() < 200 ? g.GetDistance() : 200)
+            .Select(g => g.GetDistance() < ceiling ? g.GetDistance() : ceiling)
             .ToList();
     }
 
@@ -119,6 +126,7 @@ public class ParticleFilterDonst : MonoBehaviour
         }
     }
 
+
     public void CreateDistributedGhosts()
     {
         Random random = new Random();
@@ -147,7 +155,7 @@ public class ParticleFilterDonst : MonoBehaviour
     private Tuple<float, float> TranslateCoordinates(float oldX, float oldY)
     {
         // This function maps a custom coordinate system
-        // into the unity coordinate system.
+        // into unitys coordinate system.
         // Examples:
         //      (0, 0) top left of the map
         //      (106, 48) center of the map
@@ -157,10 +165,51 @@ public class ParticleFilterDonst : MonoBehaviour
         return Tuple.Create(x, y);
     }
 
+    #region Debugging functions
+
+    private void TestPrepareStuff()
+    {
+        CreateGhostsForEvaluationTest();
+    }
+
+    private void TestExecuteStuff()
+    {
+        List<int> ghostWeights = EvaluateGhostDistances();
+        List<int> bestGhosts = SelectBestWeights(ghostWeights);
+        ChangeGhostLocations(bestGhosts);
+        HighlightGhosts(bestGhosts);
+        // DoNothing();
+        MoveObjects();
+    }
+
+    private void DoNothing()
+    {
+        // it's required for proper debugging
+        cs.robot.Move(0);
+    }
+
     private void HighlightGhosts(List<int> chosenGhosts)
     {
-        // For test purposes
         cs.ghosts.ForEach(g => g.ChangeColor(Color.red));
         chosenGhosts.ForEach(i => cs.ghosts[i].ChangeColor(Color.blue));
     }
+
+    public void CreateGhostsForEvaluationTest()
+    {
+        CreateSquareGhosts(82f, 45f, 96.247f);
+        CreateSquareGhosts(98f, 45f, 120);
+        CreateSquareGhosts(110f, 40f, 90f);
+        CreateSquareGhosts(0f, 40f, 0f);
+        CreateSquareGhosts(207f, 40f, 180f);
+        CreateSquareGhosts(106, 15f, 170f);
+    }
+
+    private void CreateSquareGhosts(float xCoord, float yCoord, float rotation)
+    {
+        for (int y = 0; y < 5; y++)
+        for (float x = 0; x < 5; x++)
+            CreateGhost(xCoord + x, yCoord + y, rotation);
+    }
+
+    #endregion
 }
