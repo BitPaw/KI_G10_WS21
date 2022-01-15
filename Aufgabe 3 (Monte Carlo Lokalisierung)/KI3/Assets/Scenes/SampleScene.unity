@@ -3990,6 +3990,18 @@ PrefabInstance:
       propertyPath: Range
       value: 40
       objectReference: {fileID: 0}
+    - target: {fileID: 7157184847511507740, guid: 1f357f23b1c776c4188edf780deacb97, type: 3}
+      propertyPath: ScansCanFail
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7157184847511507740, guid: 1f357f23b1c776c4188edf780deacb97, type: 3}
+      propertyPath: ScansDeflect
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7157184847511507740, guid: 1f357f23b1c776c4188edf780deacb97, type: 3}
+      propertyPath: FuzzyifyDistances
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7157184847888880288, guid: 1f357f23b1c776c4188edf780deacb97, type: 3}
       propertyPath: m_Constraints
       value: 84
@@ -4000,7 +4012,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7157184847888880289, guid: 1f357f23b1c776c4188edf780deacb97, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7157184847888880289, guid: 1f357f23b1c776c4188edf780deacb97, type: 3}
       propertyPath: m_LocalPosition.y

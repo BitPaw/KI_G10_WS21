@@ -32,14 +32,14 @@ public class ParticleFilterDonst : MonoBehaviour
         // TestExecuteStuff(); // Debugging purposes: Comment everything within the function when used, except lines with robotReady
 
         List<int> ghostWeights = EvaluateGhostDistances();
-        List<int> bestGhosts = SelectBestWeights(ghostWeights);
+        List<Tuple<int, int>> bestGhosts = SelectBestWeights(ghostWeights);
         ChangeGhostLocations(bestGhosts);
         MoveObjects();
 
         cs.robotReady = false;
     }
 
-    private void ChangeGhostLocations(List<int> bestWeights)
+    private void ChangeGhostLocations(List<Tuple<int, int>> bestWeights)
     {
         // throw new NotImplementedException();
     }
@@ -92,10 +92,10 @@ public class ParticleFilterDonst : MonoBehaviour
             .ToList();
     }
 
-    private List<int> SelectBestWeights(List<int> weights)
+    private List<Tuple<int, int>> SelectBestWeights(List<int> weights)
     {
         Random random = new Random();
-        List<int> indexes = new List<int>();
+        List<Tuple<int, int>> bestWeights = new List<Tuple<int, int>>();
         int chance;
         int index = 0;
 
@@ -103,11 +103,11 @@ public class ParticleFilterDonst : MonoBehaviour
         {
             chance = random.Next(1, 101);
             if (chance <= weight)
-                indexes.Add(index);
+                bestWeights.Add(Tuple.Create(index, weight));
             index++;
         }
 
-        return indexes;
+        return bestWeights;
     }
 
     private void MoveObjects()
@@ -175,7 +175,7 @@ public class ParticleFilterDonst : MonoBehaviour
     private void TestExecuteStuff()
     {
         List<int> ghostWeights = EvaluateGhostDistances();
-        List<int> bestGhosts = SelectBestWeights(ghostWeights);
+        List<Tuple<int, int>> bestGhosts = SelectBestWeights(ghostWeights);
         ChangeGhostLocations(bestGhosts);
         HighlightGhosts(bestGhosts);
         // DoNothing();
@@ -188,10 +188,10 @@ public class ParticleFilterDonst : MonoBehaviour
         cs.robot.Move(0);
     }
 
-    private void HighlightGhosts(List<int> chosenGhosts)
+    private void HighlightGhosts(List<Tuple<int, int>> chosenGhosts)
     {
         cs.ghosts.ForEach(g => g.ChangeColor(Color.red));
-        chosenGhosts.ForEach(i => cs.ghosts[i].ChangeColor(Color.blue));
+        chosenGhosts.ForEach(x => cs.ghosts[x.Item1].ChangeColor(Color.blue));
     }
 
     public void CreateGhostsForEvaluationTest()
