@@ -41,7 +41,50 @@ public class ParticleFilterDonst : MonoBehaviour
 
     private void ChangeGhostLocations(List<Tuple<int, int>> bestWeights)
     {
-        // throw new NotImplementedException();
+    }
+
+
+    private List<int> DistributeRemainingGhostAmount(List<float> weights, int amount)
+    {
+        var totalWeight = weights.Sum();
+        var length = weights.Count();
+
+        var actual = new double[length];
+        var error = new double[length];
+        var rounded = new int[length];
+
+        var added = 0;
+
+        var i = 0;
+        foreach (var w in weights)
+        {
+            actual[i] = amount * (w / totalWeight);
+            rounded[i] = (int) Math.Floor(actual[i]);
+            error[i] = actual[i] - rounded[i];
+            added += rounded[i];
+            i += 1;
+        }
+
+        while (added < amount)
+        {
+            var maxError = 0.0;
+            var maxErrorIndex = -1;
+            for (var e = 0; e < length; ++e)
+            {
+                if (error[e] > maxError)
+                {
+                    maxError = error[e];
+                    maxErrorIndex = e;
+                }
+            }
+
+            rounded[maxErrorIndex] += 1;
+            error[maxErrorIndex] -= 1;
+
+            added += 1;
+        }
+
+        return rounded.ToList();
     }
 
     private List<int> EvaluateGhostDistances()
@@ -144,6 +187,31 @@ public class ParticleFilterDonst : MonoBehaviour
     }
 
 
+    private void SpawnAroundGhost(GhostController sourceGhost, GhostController destGhost, float radius)
+    {
+        // Spawns a existing ghost (sourceGhost) around a ghost (destGhost)
+        Random random = new Random();
+
+        float destAngle = destGhost.GetRotation().y;
+        (float destX, float destY) =
+            TranslateCoordinates(destGhost.transform.position.z, destGhost.transform.position.x);
+
+        float randomRadius = radius * (float) Math.Sqrt(random.NextDouble());
+        float randomTheta = (float) (random.NextDouble() * 2 * Math.PI);
+
+        float xDeviation = randomRadius * (float) Math.Cos(randomTheta);
+        float yDeviation = randomRadius * (float) Math.Sin(randomTheta);
+        float angleDeviation = -1 + (float) (random.NextDouble() * 2); // Deviation between -1 and 1
+
+        float sourceAngle = destAngle + angleDeviation;
+        (float sourceX, float sourceY) =
+            TranslateCoordinates(destX + xDeviation, destY + yDeviation);
+
+        sourceGhost.transform.eulerAngles = new Vector3(0, sourceAngle, 0);
+        sourceGhost.transform.position = new Vector3(sourceY, 0.57f, sourceX);
+    }
+
+
     public void CreateGhost(float x, float y, float rotation)
     {
         (float newX, float newY) = TranslateCoordinates(x, y);
@@ -169,17 +237,22 @@ public class ParticleFilterDonst : MonoBehaviour
 
     private void TestPrepareStuff()
     {
-        CreateGhostsForEvaluationTest();
+        CreateGhost(82f, 45f, 96.247f);
+        CreateGhost(82f, 45f, 96.247f);
+        // CreateDistributedGhosts();
+        // CreateSquareGhosts(82f, 45f, 96.247f);
+        // CreateGhostsForEvaluationTest();
     }
 
     private void TestExecuteStuff()
     {
-        List<int> ghostWeights = EvaluateGhostDistances();
-        List<Tuple<int, int>> bestGhosts = SelectBestWeights(ghostWeights);
-        ChangeGhostLocations(bestGhosts);
-        HighlightGhosts(bestGhosts);
-        // DoNothing();
-        MoveObjects();
+        // List<int> ghostWeights = EvaluateGhostDistances();
+        // List<Tuple<int, int>> bestGhosts = SelectBestWeights(ghostWeights);
+        // ChangeGhostLocations(bestGhosts);
+        // HighlightGhosts(bestGhosts);
+        SpawnAroundGhost(cs.ghosts[1], cs.ghosts[0], 0.5f);
+        DoNothing();
+        // MoveObjects();
     }
 
     private void DoNothing()
@@ -209,6 +282,24 @@ public class ParticleFilterDonst : MonoBehaviour
         for (int y = 0; y < 5; y++)
         for (float x = 0; x < 5; x++)
             CreateGhost(xCoord + x, yCoord + y, rotation);
+    }
+
+    private void SpawnAroundGhost(GhostController ghost, float radius)
+    {
+        // Spawns a new ghost around a ghost
+        Random random = new Random();
+        float angle = ghost.transform.eulerAngles.y;
+        (float x, float y) =
+            TranslateCoordinates(ghost.transform.position.z, ghost.transform.position.x);
+
+        float randomRadius = radius * (float) Math.Sqrt(random.NextDouble());
+        float randomTheta = (float) (random.NextDouble() * 2 * Math.PI);
+
+        float xDeviation = randomRadius * (float) Math.Cos(randomTheta);
+        float yDeviation = randomRadius * (float) Math.Sin(randomTheta);
+        float angleDeviation = -1 + (float) (random.NextDouble() * 2); // Deviation between -1 and 1
+
+        CreateGhost(x + xDeviation, y + yDeviation, angle + angleDeviation);
     }
 
     #endregion
