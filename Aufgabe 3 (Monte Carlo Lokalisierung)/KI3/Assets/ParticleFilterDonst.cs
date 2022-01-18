@@ -41,6 +41,45 @@ public class ParticleFilterDonst : MonoBehaviour
 
     private void ChangeGhostLocations(List<Tuple<int, int>> bestWeights)
     {
+
+        List<int> moveGhost = new List<int>();
+        var bestweightCount = 0;
+
+
+        for (int i = 0; i < cs.ghosts.Count-1; i++)
+        {
+            while (bestWeights[bestweightCount].Item1 < i && bestweightCount <= bestweightCount -1)
+            {
+                bestweightCount++;
+            }
+
+            if(bestWeights[bestweightCount].Item1 != i)
+            {
+                moveGhost.Add(i);
+            }
+        }
+
+        //for (int i = cs.ghosts.Count - 1; i >= 0; i--)
+        //{
+        //    var isInBest = bestWeights.Any(bw => bw.Item1 == i);
+
+        //    if (!isInBest)
+        //        moveGhost.Add(i);
+        //}
+
+        Random random = new Random();
+
+        foreach (var ghostID in moveGhost)
+        {
+            var ghost = cs.ghosts[ghostID];
+
+            var destGhost = cs.ghosts[bestWeights[random.Next(0, bestWeights.Count)].Item1];
+
+
+            SpawnAroundGhost(ghost, destGhost, 1.5f);
+        }
+
+        Debug.Log(cs.ghosts.Count);
     }
 
 
