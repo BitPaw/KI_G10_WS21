@@ -59,14 +59,6 @@ public class ParticleFilterDonst : MonoBehaviour
             }
         }
 
-        //for (int i = cs.ghosts.Count - 1; i >= 0; i--)
-        //{
-        //    var isInBest = bestWeights.Any(bw => bw.Item1 == i);
-
-        //    if (!isInBest)
-        //        moveGhost.Add(i);
-        //}
-
         Random random = new Random();
 
         foreach (var ghostID in moveGhost)
