@@ -34,9 +34,7 @@ public class GhostController : MonoBehaviour
 
     public void Move(float distance)
     {
-        transform.eulerAngles /= 2;
-        transform.Translate(transform.forward * distance);
-        transform.eulerAngles *= 2;
+        transform.Translate(0, 0, distance);
     }
 
     public void Rotate(float angle)

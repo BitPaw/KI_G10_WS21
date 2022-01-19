@@ -12,6 +12,8 @@ public class ParticleFilterDonst : MonoBehaviour
     private const int MAX_MAP_HEIGHT = 96 * 2;
     private int counter = 0;
 
+    private List<int> unusedGhosts = new List<int>();
+
     public ParticleFilterDonst(ControllScript controllScript)
     {
         cs = controllScript;
@@ -29,11 +31,11 @@ public class ParticleFilterDonst : MonoBehaviour
     {
         if (!cs.robotReady) return;
 
-        // TestExecuteStuff(); // Debugging purposes: Comment everything within the function when used, except lines with robotReady
+        TestExecuteStuff(); // Debugging purposes: Comment everything within the function when used, except lines with robotReady
 
         List<int> ghostWeights = EvaluateGhostDistances();
         List<Tuple<int, int>> bestGhosts = SelectBestWeights(ghostWeights);
-        ChangeGhostLocations(bestGhosts);
+        // ChangeGhostLocations(bestGhosts);
         MoveObjects();
 
         cs.robotReady = false;
@@ -41,37 +43,30 @@ public class ParticleFilterDonst : MonoBehaviour
 
     private void ChangeGhostLocations(List<Tuple<int, int>> bestWeights)
     {
-
-        List<int> moveGhost = new List<int>();
-        var bestweightCount = 0;
-
-
-        for (int i = 0; i < cs.ghosts.Count-1; i++)
-        {
-            while (bestWeights[bestweightCount].Item1 < i && bestweightCount <= bestweightCount -1)
-            {
-                bestweightCount++;
-            }
-
-            if(bestWeights[bestweightCount].Item1 != i)
-            {
-                moveGhost.Add(i);
-            }
-        }
-
-        Random random = new Random();
-
-        foreach (var ghostID in moveGhost)
-        {
-            var ghost = cs.ghosts[ghostID];
-
-            var destGhost = cs.ghosts[bestWeights[random.Next(0, bestWeights.Count)].Item1];
-
-
-            SpawnAroundGhost(ghost, destGhost, 1.5f);
-        }
-
-        Debug.Log(cs.ghosts.Count);
+        // int remaingGhostAmount = unusedGhosts.Count;
+        //
+        //
+        // List<int> amounts = DistributeRemainingGhostAmount(
+        //     bestWeights.Select(w => (float) w.Item2).ToList(), remaingGhostAmount).ToList();
+        //
+        // unusedGhosts.ForEach(i => Destroy(cs.ghosts[i]));
+        //
+        // SpawnAroundGhost();
+        // int index = 0;
+        // int remainingGhostCounter = 0;
+        // foreach (var weight in bestWeights)
+        // {
+        //     for (int i = 0; i < amounts[index]; i++)
+        //     {
+        //         GhostController remainingGhost = cs.ghosts[unusedGhosts[remainingGhostCounter]];
+        //         GhostController destGhost = cs.ghosts[weight.Item1]; 
+        //         SpawnAroundGhost(remainingGhost, destGhost, 1.5f);
+        //         remainingGhostCounter++;
+        //     }
+        //     index++;
+        // }
+        //
+        // unusedGhosts.Clear();
     }
 
 
@@ -144,6 +139,14 @@ public class ParticleFilterDonst : MonoBehaviour
         // max describes the tolerance between the distances of robot and ghost. 
         // If the difference exceeds tolerance, then the current probability is set to 0.
         float max = 10f;
+        
+
+        List<int> valuesInt = new List<int>();
+
+        for (int i = 0; i < values.Count; i++)
+        {
+            
+        }
 
         List<int> probabilities = values
             .Select(v => v <= max ? 100 - (int) ((v - min) / (max - min) * 100) : 0)
@@ -159,7 +162,7 @@ public class ParticleFilterDonst : MonoBehaviour
 
     private List<float> MeasureGhostDistances()
     {
-        float ceiling = 100;
+        float ceiling = 1000;
 
         return cs.ghosts
             .Select(g => g.GetDistance() < ceiling ? g.GetDistance() : ceiling)
@@ -178,6 +181,8 @@ public class ParticleFilterDonst : MonoBehaviour
             chance = random.Next(1, 101);
             if (chance <= weight)
                 bestWeights.Add(Tuple.Create(index, weight));
+            else
+                unusedGhosts.Add(index);
             index++;
         }
 
@@ -268,8 +273,8 @@ public class ParticleFilterDonst : MonoBehaviour
 
     private void TestPrepareStuff()
     {
-        CreateGhost(82f, 45f, 96.247f);
-        CreateGhost(82f, 45f, 96.247f);
+        CreateGhostOnRobot();
+        // CreateGhost(82f, 45f, 96.247f);
         // CreateDistributedGhosts();
         // CreateSquareGhosts(82f, 45f, 96.247f);
         // CreateGhostsForEvaluationTest();
@@ -277,12 +282,15 @@ public class ParticleFilterDonst : MonoBehaviour
 
     private void TestExecuteStuff()
     {
-        // List<int> ghostWeights = EvaluateGhostDistances();
-        // List<Tuple<int, int>> bestGhosts = SelectBestWeights(ghostWeights);
+        List<int> ghostWeights = EvaluateGhostDistances();
+        List<Tuple<int, int>> bestGhosts = SelectBestWeights(ghostWeights);
         // ChangeGhostLocations(bestGhosts);
         // HighlightGhosts(bestGhosts);
-        SpawnAroundGhost(cs.ghosts[1], cs.ghosts[0], 0.5f);
-        DoNothing();
+
+        // cs.robot.transform.position = new Vector3(0, 0, 0);
+        
+        // SpawnAroundGhost(cs.ghosts[1], cs.ghosts[0], 0.5f);
+        // DoNothing();
         // MoveObjects();
     }
 
@@ -333,5 +341,11 @@ public class ParticleFilterDonst : MonoBehaviour
         CreateGhost(x + xDeviation, y + yDeviation, angle + angleDeviation);
     }
 
+    public void CreateGhostOnRobot()
+    {
+        cs.Ghostspawner.position = new Vector3(0.1f, 0.58f, 13.37f);
+        cs.Ghostspawner.rotation = Quaternion.Euler(0f, 96.247f, 0f);
+        Instantiate(cs.Ghost, cs.Ghostspawner.position, cs.Ghostspawner.rotation);
+    }
     #endregion
 }
