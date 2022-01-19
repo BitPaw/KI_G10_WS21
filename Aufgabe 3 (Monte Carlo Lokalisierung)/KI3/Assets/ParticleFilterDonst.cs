@@ -35,7 +35,7 @@ public class ParticleFilterDonst : MonoBehaviour
 
         List<int> ghostWeights = EvaluateGhostDistances();
         List<Tuple<int, int>> bestGhosts = SelectBestWeights(ghostWeights);
-        // ChangeGhostLocations(bestGhosts);
+        ChangeGhostLocations(bestGhosts);
         MoveObjects();
 
         cs.robotReady = false;
@@ -67,6 +67,37 @@ public class ParticleFilterDonst : MonoBehaviour
         // }
         //
         // unusedGhosts.Clear();
+
+        //Debug.Log(bestWeights.Average(i => i.Item2).ToString());
+        List<int> moveGhost = new List<int>();
+        var bestweightCount = 0;
+
+
+        for (int i = 0; i < cs.ghosts.Count - 1; i++)
+        {
+            while (bestWeights[bestweightCount].Item1 < i && bestweightCount <= bestweightCount - 1)
+            {
+                bestweightCount++;
+            }
+
+            if (bestWeights[bestweightCount].Item1 != i)
+            {
+                moveGhost.Add(i);
+            }
+        }
+
+        Random random = new Random();
+
+        foreach (var ghostID in moveGhost)
+        {
+            var ghost = cs.ghosts[ghostID];
+
+
+            var destID = bestWeights[random.Next(0, bestWeights.Count)].Item1;
+            var destGhost = cs.ghosts[destID];
+            SpawnAroundGhost(ghost, destGhost, 1.5f);
+            cs.ghosts[ghostID].Rotate(random.Next(0, 361));
+        }
     }
 
 
@@ -134,25 +165,31 @@ public class ParticleFilterDonst : MonoBehaviour
 
     private List<int> Normalize(List<float> values)
     {
-        // min should always be 0
-        float min = 0f;
-        // max describes the tolerance between the distances of robot and ghost. 
-        // If the difference exceeds tolerance, then the current probability is set to 0.
-        float max = 10f;
-        
+        //// min should always be 0
+        //float min = 0f;
+        //// max describes the tolerance between the distances of robot and ghost. 
+        //// If the difference exceeds tolerance, then the current probability is set to 0.
+        //float max = 10f;
 
-        List<int> valuesInt = new List<int>();
 
-        for (int i = 0; i < values.Count; i++)
-        {
-            
-        }
+        //List<int> valuesInt = new List<int>();
 
-        List<int> probabilities = values
-            .Select(v => v <= max ? 100 - (int) ((v - min) / (max - min) * 100) : 0)
-            .ToList();
+        //for (int i = 0; i < values.Count; i++)
+        //{
 
-        return probabilities;
+        //}
+
+        //List<int> probabilities = values
+        //    .Select(v => v <= max ? 100 - (int) ((v - min) / (max - min) * 100) : 0)
+        //    .ToList();
+
+        //return probabilities;
+
+        return values.Select(v =>
+        (v >= 60f)?
+        0 : 100 - (int)Math.Round(v * 1.66666f)
+        ).ToList();
+
     }
 
     private float MeasureRobotDistance()
@@ -179,7 +216,12 @@ public class ParticleFilterDonst : MonoBehaviour
         foreach (var weight in weights)
         {
             chance = random.Next(1, 101);
-            if (chance <= weight)
+
+            var ghostPos = cs.ghosts[index].transform.position;
+            var inField = (ghostPos.x > -50f && ghostPos.x < 50f && ghostPos.z > -107f && ghostPos.z < 107f);
+
+
+            if (inField && chance <= weight)
                 bestWeights.Add(Tuple.Create(index, weight));
             else
                 unusedGhosts.Add(index);
