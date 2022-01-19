@@ -1,18 +1,18 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class ControllScript : MonoBehaviour
 {
-    public List<GhostController> ghosts;
-    public RobotController robot;
-    public bool robotReady = false;
-    public Transform Ghostspawner;
-    private ParticleFilterDonst particleFilterDonst;
+    [SerializeField] public List<GhostController> ghosts;
+    [SerializeField] public RobotController robot;
+    [SerializeField] public bool robotReady = false;
+    [SerializeField] public Transform Ghostspawner;
+    [SerializeField] private ParticleFilterBitPaw particleFilterDonst;
 
     public ControllScript()
     {
-        particleFilterDonst = new ParticleFilterDonst(this);
+        particleFilterDonst = new ParticleFilterBitPaw();
+        particleFilterDonst.ControllScriptSet(this);
     }
 
     void Start()
@@ -29,6 +29,11 @@ public class ControllScript : MonoBehaviour
     private void CreateGhost(Transform trans)
     {
         Instantiate(Ghost, trans.position, trans.rotation);
+    }
+
+    public void SpawnRobot(GameObject ghost, Vector3 position, Quaternion rotation)
+    {
+        Instantiate(ghost, position, rotation);
     }
 
 

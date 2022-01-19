@@ -4,23 +4,23 @@ using UnityEngine;
 
 public class RobotController : MonoBehaviour
 {
-    private float maxPower = 100f;
-    private float MaxVelocity = 0.5f;
-    private float StandardTorque = 20f;
-    private float timeOut = 10f;
-    private float currentTorque;
-    private SensorSuite sensor;
-    private Rigidbody rigid;
-    private float startingRotation;
-    private float desiredRotation;
-    private Vector3 startingPosition;
-    private float desiredDistance;
-    private float timeOfStart;
-    private float timeToEnd;
-    private float desiredPower;
-    private bool movementDesired = false;
-    private bool rotationDesired = false;
-    private bool needsToCrossThreshold = false;
+    [SerializeField] private float maxPower = 100f;
+    [SerializeField] private float MaxVelocity = 0.5f;
+    [SerializeField] private float StandardTorque = 20f;
+    [SerializeField] private float timeOut = 10f;
+    [SerializeField] private float currentTorque;
+    [SerializeField] private SensorSuite sensor;
+    [SerializeField] private Rigidbody rigid;
+    [SerializeField] private float startingRotation;
+    [SerializeField] private float desiredRotation;
+    [SerializeField] private Vector3 startingPosition;
+    [SerializeField] private float desiredDistance;
+    [SerializeField] private float timeOfStart;
+    [SerializeField] private float timeToEnd;
+    [SerializeField] private float desiredPower;
+    [SerializeField] private bool movementDesired = false;
+    [SerializeField] private bool rotationDesired = false;
+    [SerializeField] private bool needsToCrossThreshold = false;
 
     public float lastFrameRotation = 0;
 

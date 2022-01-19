@@ -4,11 +4,13 @@ using UnityEngine;
 
 public class SensorSuite : MonoBehaviour
 {
-    public float Range = 2f, DeflectionAngle = 45f, ProbOfFailedScan = .2f, Wonkyness = .4f;
-    public int WonkynessDistributionDampening = 5;
-    public bool ScansDeflect = true, FuzzyifyDistances = true, ScansCanFail = true, CanCorrectFailedScans = false;
-    private float spread = 5f, degreesPerStep, minDistance;
-    private int steps = 10;
+    [SerializeField]  public float Range = 2f, DeflectionAngle = 45f, ProbOfFailedScan = .2f, Wonkyness = .4f;
+    [SerializeField]  public int WonkynessDistributionDampening = 5;
+    [SerializeField]  public bool ScansDeflect = true, FuzzyifyDistances = true, ScansCanFail = true, CanCorrectFailedScans = false;
+    [SerializeField]  private float spread = 5f, degreesPerStep, minDistance;
+    [SerializeField]  private int steps = 10;
+
+
     // Start is called before the first frame update
     void Start()
     {
