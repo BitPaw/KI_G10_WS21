@@ -5,7 +5,7 @@ public class ControllScript : MonoBehaviour
 {
     [SerializeField] public List<GhostController> ghosts;
     [SerializeField] public RobotController robot;
-    [SerializeField] public bool robotReady = false;
+    [SerializeField] public bool robotReady { get; set; } = false;
     [SerializeField] public Transform Ghostspawner;
     [SerializeField] private ParticleFilterBitPaw particleFilterDonst;
 

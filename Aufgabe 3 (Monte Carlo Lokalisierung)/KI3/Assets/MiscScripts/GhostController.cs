@@ -4,9 +4,13 @@ using UnityEngine;
 
 public class GhostController : MonoBehaviour
 {
+    [SerializeField] private float _distanceToWall = 0;
+    [SerializeField] private Renderer _renderer = null;
+
     void Start()
     {
         ControllScript.GetInstance().RegisterGhost(this);
+        _renderer = GetComponent<Renderer>();
     }
 
     void OnDestroy()
@@ -23,13 +27,27 @@ public class GhostController : MonoBehaviour
     public float GetDistance()
     {
         RaycastHit hit;
-        float distance = float.PositiveInfinity;
-        if (Physics.Raycast(transform.position, transform.forward, out hit, distance))
-        {
-            distance = Vector3.Distance(hit.point, transform.position);
+        _distanceToWall = float.PositiveInfinity;
+        if (Physics.Raycast(transform.position, transform.forward, out hit, _distanceToWall))
+        {         
+            _distanceToWall = Vector3.Distance(hit.point, transform.position);
+
+            bool enableDirectionDraw = false;
+
+            if (enableDirectionDraw)
+            {
+                if (_distanceToWall != float.PositiveInfinity)
+                {
+                    Debug.DrawRay(transform.position, transform.forward * _distanceToWall, Color.cyan);
+                }
+                else
+                {
+                    Debug.DrawRay(transform.position, transform.forward, Color.red);
+                }
+            }            
         }
 
-        return distance;
+        return _distanceToWall;
     }
 
     public void Move(float distance)
@@ -54,6 +72,7 @@ public class GhostController : MonoBehaviour
 
     public void ChangeColor(Color color)
     {
-        gameObject.GetComponent<Renderer>().material.color = color;
+        _renderer.material.color = color;
+        _renderer.material.SetColor("_EmissionColor", color);
     }
 }
