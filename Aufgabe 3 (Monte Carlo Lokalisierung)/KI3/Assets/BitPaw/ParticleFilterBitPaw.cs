@@ -1,11 +1,24 @@
-﻿using System.Collections.Generic;
+﻿using BitPaw;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ParticleFilterBitPaw
 {
     private ControllScript cs = null;
-    private int _inputGhostDistanceSize = 0;
-    private float[] _inputGhostDistance = null;
+
+    // Settings
+    bool HandleGhostWallCollisionAsOutOfBounce = true;
+    bool FilterTooFarAway = false;
+    bool FilerOutOfBounce = true;
+    float FilterValueMinimalValue = 1;
+    float FilterValueRatingGood = 0.005f;
+    float FilterValueRatingBad = 2.0f;
+    float GhostsSpawnSpacing = 1f; // bigger=>fewer, smaler=>more
+
+
+    bool EnableRayCastDirectionDraw = true;
+
+    private SensorDataHistory _sensorDataHistory = new SensorDataHistory();
 
     public void ControllScriptSet(ControllScript controllScript)
     {
@@ -19,40 +32,124 @@ public class ParticleFilterBitPaw
 
     private void InputDataUpdate()
     {
-        if (_inputGhostDistanceSize < cs.ghosts.Count) // Allocate memory
-        {
-            _inputGhostDistanceSize = cs.ghosts.Count;
-            _inputGhostDistance = new float[_inputGhostDistanceSize];
-        }
+        int amountofValues = cs.ghosts.Count;
+        int amountOfRays = 5;
+        int fieldOfView = 360;
+        SensorDataSet sensorDataSet = _sensorDataHistory.GetNext();
+        sensorDataSet.Reserve(amountofValues);
 
-        for (int i = 0; i < _inputGhostDistanceSize; i++)    // Fill woth Data
+        for (int i = 0; i < amountofValues; i++) // Robot loop
         {
-            _inputGhostDistance[i] = cs.ghosts[i].GetDistance();
-        }
+            GhostController ghostController = cs.ghosts[i];
+            SensorDataVieldOfView sensorData = sensorDataSet.SensorDataVieldOfViewList[i];
+            int sensorDataIndex = 0;
+            int amountOfSteps = fieldOfView / amountOfRays;
+
+            sensorData.Reserve(amountOfRays);
+
+            Quaternion originalRotation;
+
+            originalRotation = ghostController.transform.rotation;
+
+            for (int step = 0; step < fieldOfView; step += amountOfSteps) // Robot-Sensor loop
+            {
+                float maxRange = float.PositiveInfinity;
+                Transform ghostTrandform = ghostController.transform;
+                Vector3 ghostPosition = ghostTrandform.position;              
+                float posRR = ((fieldOfView / amountOfRays * 2) - (fieldOfView - step - (amountOfSteps))) * 0.5f; ;
+
+                ghostController.Rotate(posRR);
+
+                Vector3 ghostDirection = ghostTrandform.forward;
+                RaycastHit raycastHit;
+                bool hasHit = Physics.Raycast(ghostPosition, ghostDirection, out raycastHit, maxRange);
+                float distanceToWall = float.PositiveInfinity;
+
+                if (hasHit)
+                {
+                    distanceToWall = Vector3.Distance(raycastHit.point, ghostTrandform.position);              
+
+                    if (EnableRayCastDirectionDraw)
+                    {
+                        ghostDirection *= distanceToWall;
+
+                        Debug.DrawRay(ghostPosition, ghostDirection, Color.cyan);
+                    }
+                }
+                else
+                {
+                    if (EnableRayCastDirectionDraw)
+                    {
+                        ghostDirection *= 100;
+
+                        Debug.DrawRay(ghostPosition, ghostDirection, Color.red);
+                    }
+                }
+
+                sensorData.DistanceToWall[sensorDataIndex++] = distanceToWall;
+
+                ghostController.transform.rotation = originalRotation;
+            }
+        }        
     }
 
     private void InputDataRate()
     {
         float inputRobotDistance = cs.robot.Scan();
-        float avrage = inputRobotDistance; // We 
-        float standardDeviation = QuickMaths.StandardDeviationCalculate(_inputGhostDistance, _inputGhostDistanceSize, avrage);
+        float avrage = inputRobotDistance;
+        SensorDataSet sensorDataSet = _sensorDataHistory.GetCurrent();    
+
+        for (int i = 0; i < sensorDataSet.SensorDataVieldOfViewListSize; i++)
+        {
+            SensorDataVieldOfView sensorDataVieldOfView = sensorDataSet.SensorDataVieldOfViewList[i];
+
+            sensorDataVieldOfView.Rating = 0.5f;
+            cs.ghosts[i].ChangeColor(new Color(1, 1, 0));
+
+            for (int v = 0; v < sensorDataVieldOfView.DataSize; v++)
+            {
+                float value = sensorDataVieldOfView.DistanceToWall[v];
+                bool impossibleValue = value == float.PositiveInfinity;
+
+                if (impossibleValue)
+                {
+                    sensorDataVieldOfView.Rating = 0;
+                    cs.ghosts[i].ChangeColor(new Color(1,0,0));
+                    break;
+                }
+            }     
+        }
+
+
+        /*
+               float standardDeviation = QuickMaths.StandardDeviationCalculate(_inputGhostDistance, _inputGhostDistanceSize, avrage);
+      
 
         for (int i = 0; i < _inputGhostDistanceSize; i++)
         {
             float inputGhostDisctance = _inputGhostDistance[i];
 
-            if (inputGhostDisctance != float.PositiveInfinity)
+            if (inputGhostDisctance == float.PositiveInfinity) // OutOfBounce
             {
-                float distrubution = QuickMaths.NormalDistribution(inputRobotDistance, inputGhostDisctance, standardDeviation);
-                float calc = Mathf.Abs(distrubution);
+                continue; // Skip to next check
+            }
 
-                _inputGhostDistance[i] = calc; // Save
-            }        
-        }
+            if (inputGhostDisctance < FilterValueMinimalValue && HandleGhostWallCollisionAsOutOfBounce) // Robot can only messure above 1 (size of Robot)[]Min distance
+            {
+                _inputGhostDistance[i] = float.PositiveInfinity; // handle sameway as outofbounce
+                continue;
+            }
+
+            float distrubution = QuickMaths.NormalDistribution(inputRobotDistance, inputGhostDisctance, standardDeviation);
+            float calc = Mathf.Abs(distrubution);
+
+            _inputGhostDistance[i] = calc; // Save      
+        }*/
     }
 
     private void InputDataColor()
     {
+        /*
         for (int i = 0; i < _inputGhostDistanceSize; i++)
         {
             float rating = _inputGhostDistance[i];
@@ -76,7 +173,7 @@ public class ParticleFilterBitPaw
             }
   
             cs.ghosts[i].ChangeColor(color);
-        }
+        }*/
     }
 
     public void Execute()
@@ -97,6 +194,7 @@ public class ParticleFilterBitPaw
 
     private void Reportion()
     {
+        /*
         List<int> spawnCandiates = new List<int>();
         List<int> reposCandiates = new List<int>();
         int spawnRange = 0;
@@ -105,24 +203,23 @@ public class ParticleFilterBitPaw
         {
             float rating = _inputGhostDistance[i];
             bool isOutOfBounce = rating == float.PositiveInfinity;
-            bool couldBeFitting = float.IsNaN(rating);
+           // bool couldBeFitting = float.IsNaN(rating);
 
-            if (isOutOfBounce)
+            if (isOutOfBounce && FilerOutOfBounce)
+            {
+                reposCandiates.Add(i);
+                continue;
+            }
+
+            if (rating < FilterValueRatingGood)
+            {
+                spawnCandiates.Add(i);
+                ++spawnRange;
+            }
+            else if (rating > FilterValueRatingBad && FilterTooFarAway)
             {
                 reposCandiates.Add(i);
             }
-            else
-            {
-                if (rating < 0.03f)
-                {
-                    spawnCandiates.Add(i);
-                    ++spawnRange;
-                }
-                else if(rating > 2f)
-                {
-                    reposCandiates.Add(i);
-                }
-            }           
         }
 
         if (spawnRange > 0)
@@ -142,19 +239,19 @@ public class ParticleFilterBitPaw
       
 
         spawnCandiates.Clear();
-        reposCandiates.Clear();
+        reposCandiates.Clear();*/
     }
 
     private void MoveObjects()
     {
         float distanceToWall = cs.robot.Scan();
-        bool shouldTurn = distanceToWall < 2f;
+        bool shouldTurn = distanceToWall < 3f;
 
         Transform transform = cs.robot.transform;
 
         if (shouldTurn)
         {
-            float degrees = 45f * Time.deltaTime;
+            float degrees = 90f * Time.deltaTime;
             // cs.robot.Rotate(degrees);
         
             Vector3 oldscaling = transform.localScale;
@@ -179,13 +276,12 @@ public class ParticleFilterBitPaw
 
     private void CreateDistributedGhosts()
     {
-        const float SPACE = 0.2f; // bigger=>fewer, smaler=>more
         const float scalingX = 10;
         const float scalingY = 22;
 
-        for (float y = -5; y < 5; y += SPACE)
+        for (float y = -5; y < 5; y += GhostsSpawnSpacing)
         {
-            for (float x = -5; x < 5; x += SPACE)
+            for (float x = -5; x < 5; x += GhostsSpawnSpacing)
             {
                 float degrees = Random.Range(0, 360);
                 CreateGhost(x * scalingX, y * scalingY, degrees);
