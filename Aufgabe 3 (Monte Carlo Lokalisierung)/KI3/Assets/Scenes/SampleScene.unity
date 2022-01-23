@@ -3884,6 +3884,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1928886295}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1936153289 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7500343559009691987, guid: 9c5295e35994d3149b850bf5913872f8, type: 3}
+  m_PrefabInstance: {fileID: 7500343558766396372}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1936153290
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1936153289}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 070d3e7de6991c54ea24312abbfc4ede, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ghosts: []
+  robot: {fileID: 0}
+  Ghostspawner: {fileID: 972019751}
+  Ghost: {fileID: 8444737827424029339, guid: a2167fc0fc810cf42b570a714e8b9415, type: 3}
 --- !u!1 &1990381199
 GameObject:
   m_ObjectHideFlags: 0
@@ -4115,7 +4136,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7500343559009691996, guid: 9c5295e35994d3149b850bf5913872f8, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 9c5295e35994d3149b850bf5913872f8, type: 3}
 --- !u!1001 &8444737826649379533
 PrefabInstance:
@@ -4190,7 +4212,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8444737827424029339, guid: a2167fc0fc810cf42b570a714e8b9415, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a2167fc0fc810cf42b570a714e8b9415, type: 3}
