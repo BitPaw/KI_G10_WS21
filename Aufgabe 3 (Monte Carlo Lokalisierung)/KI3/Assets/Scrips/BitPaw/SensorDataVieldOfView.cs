@@ -3,8 +3,8 @@
     // Raycast Result, what does the sensor see in a 2D view
     public class SensorDataVieldOfView
     {
-        public int DataSize { get; set; } = 0;
-        public float[] DistanceToWall { get; set; } = null;        
+        public int DataSize  = 0;
+        public float[] DistanceToWall = null;        
         public float Rating { get; set; }
 
         public void Reserve(int size)

@@ -13,12 +13,15 @@ public class ParticleFilterBitPaw
     float FilterValueMinimalValue = 1;
     float FilterValueRatingGood = 0.005f;
     float FilterValueRatingBad = 2.0f;
-    float GhostsSpawnSpacing = 1f; // bigger=>fewer, smaler=>more
+    float GhostsSpawnSpacing = 0.08f; // bigger=>fewer, smaler=>more
 
+
+    int AmountOfRays = 5;
 
     bool EnableRayCastDirectionDraw = true;
 
-    private SensorDataHistory _sensorDataHistory = new SensorDataHistory();
+    private SensorDataHistory _sensorDataHistory = new SensorDataHistory(); // GhostData
+    private SensorDataVieldOfView _sensorDataVieldOfViewRobot = new SensorDataVieldOfView(); // RobotView
 
     public void ControllScriptSet(ControllScript controllScript)
     {
@@ -33,91 +36,72 @@ public class ParticleFilterBitPaw
     private void InputDataUpdate()
     {
         int amountofValues = cs.ghosts.Count;
-        int amountOfRays = 5;
-        int fieldOfView = 360;
+       
         SensorDataSet sensorDataSet = _sensorDataHistory.GetNext();
         sensorDataSet.Reserve(amountofValues);
 
         for (int i = 0; i < amountofValues; i++) // Robot loop
         {
             GhostController ghostController = cs.ghosts[i];
-            SensorDataVieldOfView sensorData = sensorDataSet.SensorDataVieldOfViewList[i];
-            int sensorDataIndex = 0;
-            int amountOfSteps = fieldOfView / amountOfRays;
+            SensorDataVieldOfView sensorData = sensorDataSet.SensorDataVieldOfViewList[i];            
 
-            sensorData.Reserve(amountOfRays);
+            sensorData.Reserve(AmountOfRays);
 
-            Quaternion originalRotation;
+            QuickMaths.SpreadedRayCast(ghostController.transform, AmountOfRays, ref sensorData.DistanceToWall, true);        
+        }        
+    }
 
-            originalRotation = ghostController.transform.rotation;
+    private float RateFromData(float[] target, float[] data, int dataSize)
+    {
+        float rating = 0;
 
-            for (int step = 0; step < fieldOfView; step += amountOfSteps) // Robot-Sensor loop
+        for (int v = 0; v < dataSize; v++)
+        {
+            float value = data[v];
+            bool impossibleValue = value == float.PositiveInfinity;
+
+            if (impossibleValue)
             {
-                float maxRange = float.PositiveInfinity;
-                Transform ghostTrandform = ghostController.transform;
-                Vector3 ghostPosition = ghostTrandform.position;              
-                float posRR = ((fieldOfView / amountOfRays * 2) - (fieldOfView - step - (amountOfSteps))) * 0.5f; ;
+                rating = 0;
+                break;
+            }
+            else
+            {
+                float diff = data[v] - target[v];
+                float ablDiff = Mathf.Abs(diff);
 
-                ghostController.Rotate(posRR);
-
-                Vector3 ghostDirection = ghostTrandform.forward;
-                RaycastHit raycastHit;
-                bool hasHit = Physics.Raycast(ghostPosition, ghostDirection, out raycastHit, maxRange);
-                float distanceToWall = float.PositiveInfinity;
-
-                if (hasHit)
+                if (ablDiff > 5)
                 {
-                    distanceToWall = Vector3.Distance(raycastHit.point, ghostTrandform.position);              
-
-                    if (EnableRayCastDirectionDraw)
-                    {
-                        ghostDirection *= distanceToWall;
-
-                        Debug.DrawRay(ghostPosition, ghostDirection, Color.cyan);
-                    }
+                    rating = 0;
                 }
                 else
                 {
-                    if (EnableRayCastDirectionDraw)
-                    {
-                        ghostDirection *= 100;
-
-                        Debug.DrawRay(ghostPosition, ghostDirection, Color.red);
-                    }
-                }
-
-                sensorData.DistanceToWall[sensorDataIndex++] = distanceToWall;
-
-                ghostController.transform.rotation = originalRotation;
+                    rating += 1;
+                }           
             }
-        }        
+        }
+
+        rating /= (float)dataSize;
+
+        return rating;
     }
 
     private void InputDataRate()
     {
         float inputRobotDistance = cs.robot.Scan();
         float avrage = inputRobotDistance;
-        SensorDataSet sensorDataSet = _sensorDataHistory.GetCurrent();    
+        SensorDataSet sensorDataSet = _sensorDataHistory.GetCurrent();
+
+        _sensorDataVieldOfViewRobot.Reserve(AmountOfRays);
+        QuickMaths.SpreadedRayCast(cs.robot.transform, AmountOfRays, ref _sensorDataVieldOfViewRobot.DistanceToWall, true);
 
         for (int i = 0; i < sensorDataSet.SensorDataVieldOfViewListSize; i++)
         {
             SensorDataVieldOfView sensorDataVieldOfView = sensorDataSet.SensorDataVieldOfViewList[i];
 
-            sensorDataVieldOfView.Rating = 0.5f;
-            cs.ghosts[i].ChangeColor(new Color(1, 1, 0));
+            sensorDataVieldOfView.Rating = RateFromData(_sensorDataVieldOfViewRobot.DistanceToWall, sensorDataVieldOfView.DistanceToWall, AmountOfRays);
 
-            for (int v = 0; v < sensorDataVieldOfView.DataSize; v++)
-            {
-                float value = sensorDataVieldOfView.DistanceToWall[v];
-                bool impossibleValue = value == float.PositiveInfinity;
-
-                if (impossibleValue)
-                {
-                    sensorDataVieldOfView.Rating = 0;
-                    cs.ghosts[i].ChangeColor(new Color(1,0,0));
-                    break;
-                }
-            }     
+            cs.ghosts[i].Rating = sensorDataVieldOfView.Rating;
         }
 
 
@@ -149,10 +133,12 @@ public class ParticleFilterBitPaw
 
     private void InputDataColor()
     {
-        /*
-        for (int i = 0; i < _inputGhostDistanceSize; i++)
+        SensorDataSet sensorDataSet = _sensorDataHistory.GetCurrent();
+
+        for (int i = 0; i < sensorDataSet.SensorDataVieldOfViewListSize; i++)
         {
-            float rating = _inputGhostDistance[i];
+            SensorDataVieldOfView sensorDataVieldOfView = sensorDataSet.SensorDataVieldOfViewList[i];
+            float rating = sensorDataVieldOfView.Rating;
             Color color;
 
             if (rating == float.PositiveInfinity)
@@ -168,12 +154,12 @@ public class ParticleFilterBitPaw
                 }
                 else
                 {
-                    color = new Color(rating, 1-rating, 0);
+                    color = new Color(1-rating, rating, 0);
                 }
             }
-  
+
             cs.ghosts[i].ChangeColor(color);
-        }*/
+        }        
     }
 
     public void Execute()
@@ -194,6 +180,49 @@ public class ParticleFilterBitPaw
 
     private void Reportion()
     {
+        List<int> spawnCandiates = new List<int>();
+        List<int> reposCandiates = new List<int>();
+        SensorDataSet sensorDataSet = _sensorDataHistory.GetCurrent();
+
+        for (int i = 0; i < sensorDataSet.SensorDataVieldOfViewListSize; i++)
+        {
+            SensorDataVieldOfView sensorDataVieldOfView = sensorDataSet.SensorDataVieldOfViewList[i];
+            float rating = sensorDataVieldOfView.Rating;
+            bool reposition = rating == 0;
+            bool goodScore = rating >= 1f;
+
+            if (reposition)
+            {
+                reposCandiates.Add(i);
+            }
+
+            if (goodScore)
+            {
+                spawnCandiates.Add(i);
+            }
+        }
+
+        int spawnRange = spawnCandiates.Count;
+        if (spawnRange > 0)
+        {
+            foreach (int index in reposCandiates)
+            {
+                int spawnIndex = Random.Range(0, spawnRange - 1);
+                int spawnID = spawnCandiates[spawnIndex];
+
+                GhostController ghostNonHit = cs.ghosts[index];
+                GhostController spawnCadidatPos = cs.ghosts[spawnID];
+
+                SpawnAroundGhost(ghostNonHit, spawnCadidatPos, 2.5f);
+            }
+        }
+
+
+
+        spawnCandiates.Clear();
+        reposCandiates.Clear();
+
+
         /*
         List<int> spawnCandiates = new List<int>();
         List<int> reposCandiates = new List<int>();

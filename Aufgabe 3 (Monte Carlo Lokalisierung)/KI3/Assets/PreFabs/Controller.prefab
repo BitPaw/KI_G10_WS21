@@ -40,8 +40,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 7500343559009691987}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b929087b23844a4cab578e358076c0e, type: 3}
+  m_Script: {fileID: 11500000, guid: 070d3e7de6991c54ea24312abbfc4ede, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ghosts: []
+  robot: {fileID: 0}
   Ghostspawner: {fileID: 0}
   Ghost: {fileID: 8444737827424029339, guid: a2167fc0fc810cf42b570a714e8b9415, type: 3}

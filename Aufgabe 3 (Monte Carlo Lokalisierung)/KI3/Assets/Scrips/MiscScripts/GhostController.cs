@@ -6,8 +6,9 @@ public class GhostController : MonoBehaviour
 {
     [SerializeField] private float _distanceToWall = 0;
     [SerializeField] private Renderer _renderer = null;
+    [SerializeField] public float Rating = -1;
 
-    void Start()
+   void Start()
     {
         ControllScript.GetInstance().RegisterGhost(this);
         _renderer = GetComponent<Renderer>();

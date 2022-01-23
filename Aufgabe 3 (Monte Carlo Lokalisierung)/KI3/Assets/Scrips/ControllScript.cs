@@ -7,23 +7,27 @@ public class ControllScript : MonoBehaviour
     [SerializeField] public RobotController robot;
     [SerializeField] public bool robotReady { get; set; } = false;
     [SerializeField] public Transform Ghostspawner;
-    [SerializeField] private ParticleFilterBitPaw particleFilterDonst;
+    [SerializeField] private ParticleFilterBitPaw _particleFilter;
 
     public ControllScript()
     {
-        particleFilterDonst = new ParticleFilterBitPaw();
-        particleFilterDonst.ControllScriptSet(this);
+        _particleFilter = new ParticleFilterBitPaw();
+        _particleFilter.ControllScriptSet(this);
     }
 
     void Start()
     {
-        DeRegisterGhost(ghosts[0]);
-        particleFilterDonst.Prepare();
+        if (ghosts.Count > 0)
+        {
+            DeRegisterGhost(ghosts[0]);
+        }
+     
+        _particleFilter.Prepare();
     }
 
     void Update()
     {
-        particleFilterDonst.Execute();
+        _particleFilter.Execute();
     }
 
     private void CreateGhost(Transform trans)
