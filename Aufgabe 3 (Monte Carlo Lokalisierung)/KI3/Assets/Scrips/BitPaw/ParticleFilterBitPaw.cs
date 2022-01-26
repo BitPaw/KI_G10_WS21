@@ -17,6 +17,9 @@ public class ParticleFilterBitPaw
 
 
     int AmountOfRays = 5;
+    float CutOfRange = 5; // Image Rage of Units
+    float TotalScore = 0;
+    float RepositionRadius = 0.5f;
 
     bool EnableRayCastDirectionDraw = true;
 
@@ -37,15 +40,15 @@ public class ParticleFilterBitPaw
     {
         int amountofValues = cs.ghosts.Count;
        
-        SensorDataSet sensorDataSet = _sensorDataHistory.GetNext();
-        sensorDataSet.Reserve(amountofValues);
+        SensorDataSet sensorDataSet = _sensorDataHistory.GetNext(); // Get current data
+        sensorDataSet.Reserve(amountofValues); // Allocate memory if needed
 
         for (int i = 0; i < amountofValues; i++) // Robot loop
         {
             GhostController ghostController = cs.ghosts[i];
             SensorDataVieldOfView sensorData = sensorDataSet.SensorDataVieldOfViewList[i];            
 
-            sensorData.Reserve(AmountOfRays);
+            sensorData.Reserve(AmountOfRays); // Allocate memory if needed
 
             QuickMaths.SpreadedRayCast(ghostController.transform, AmountOfRays, ref sensorData.DistanceToWall, true);        
         }        
@@ -62,21 +65,21 @@ public class ParticleFilterBitPaw
 
             if (impossibleValue)
             {
-                rating = 0;
+                rating = 0; // impossible values are valed as 0
                 break;
             }
             else
             {
-                float diff = data[v] - target[v];
-                float ablDiff = Mathf.Abs(diff);
+                float distanceToWall = data[v] - target[v]; 
+                float distanceToWallAbsolute = Mathf.Abs(distanceToWall);
 
-                if (ablDiff > 5)
+                if (distanceToWallAbsolute > CutOfRange)
                 {
                     rating = 0;
                 }
                 else
                 {
-                    rating += 1;
+                    rating += distanceToWallAbsolute;
                 }           
             }
         }
@@ -89,10 +92,10 @@ public class ParticleFilterBitPaw
     private void InputDataRate()
     {
         float inputRobotDistance = cs.robot.Scan();
-        float avrage = inputRobotDistance;
         SensorDataSet sensorDataSet = _sensorDataHistory.GetCurrent();
 
         _sensorDataVieldOfViewRobot.Reserve(AmountOfRays);
+       
         QuickMaths.SpreadedRayCast(cs.robot.transform, AmountOfRays, ref _sensorDataVieldOfViewRobot.DistanceToWall, true);
 
         for (int i = 0; i < sensorDataSet.SensorDataVieldOfViewListSize; i++)
@@ -103,32 +106,6 @@ public class ParticleFilterBitPaw
 
             cs.ghosts[i].Rating = sensorDataVieldOfView.Rating;
         }
-
-
-        /*
-               float standardDeviation = QuickMaths.StandardDeviationCalculate(_inputGhostDistance, _inputGhostDistanceSize, avrage);
-      
-
-        for (int i = 0; i < _inputGhostDistanceSize; i++)
-        {
-            float inputGhostDisctance = _inputGhostDistance[i];
-
-            if (inputGhostDisctance == float.PositiveInfinity) // OutOfBounce
-            {
-                continue; // Skip to next check
-            }
-
-            if (inputGhostDisctance < FilterValueMinimalValue && HandleGhostWallCollisionAsOutOfBounce) // Robot can only messure above 1 (size of Robot)[]Min distance
-            {
-                _inputGhostDistance[i] = float.PositiveInfinity; // handle sameway as outofbounce
-                continue;
-            }
-
-            float distrubution = QuickMaths.NormalDistribution(inputRobotDistance, inputGhostDisctance, standardDeviation);
-            float calc = Mathf.Abs(distrubution);
-
-            _inputGhostDistance[i] = calc; // Save      
-        }*/
     }
 
     private void InputDataColor()
@@ -170,7 +147,7 @@ public class ParticleFilterBitPaw
 
         if (true)
         {
-            Reportion();
+            GhostReposition();
         }
 
         MoveObjects();  
@@ -178,11 +155,13 @@ public class ParticleFilterBitPaw
         // cs.robotReady = false;
     }
 
-    private void Reportion()
+    private void GhostReposition()
     {
         List<int> spawnCandiates = new List<int>();
         List<int> reposCandiates = new List<int>();
         SensorDataSet sensorDataSet = _sensorDataHistory.GetCurrent();
+
+        TotalScore = 0;
 
         for (int i = 0; i < sensorDataSet.SensorDataVieldOfViewListSize; i++)
         {
@@ -191,6 +170,8 @@ public class ParticleFilterBitPaw
             bool reposition = rating == 0;
             bool goodScore = rating >= 1f;
 
+            TotalScore += rating;
+
             if (reposition)
             {
                 reposCandiates.Add(i);
@@ -198,11 +179,20 @@ public class ParticleFilterBitPaw
 
             if (goodScore)
             {
-                spawnCandiates.Add(i);
+                spawnCandiates.Add(i);          
             }
-        }
+        }   
 
         int spawnRange = spawnCandiates.Count;
+
+        Debug.Log("Score : " + TotalScore);
+
+        if (TotalScore >= 0.80f)
+        {
+            Debug.Log("Finsihed");
+            Debug.Break();
+        }     
+
         if (spawnRange > 0)
         {
             foreach (int index in reposCandiates)
@@ -213,62 +203,12 @@ public class ParticleFilterBitPaw
                 GhostController ghostNonHit = cs.ghosts[index];
                 GhostController spawnCadidatPos = cs.ghosts[spawnID];
 
-                SpawnAroundGhost(ghostNonHit, spawnCadidatPos, 2.5f);
+                SpawnAroundGhost(ghostNonHit, spawnCadidatPos, RepositionRadius);
             }
         }
-
-
 
         spawnCandiates.Clear();
         reposCandiates.Clear();
-
-
-        /*
-        List<int> spawnCandiates = new List<int>();
-        List<int> reposCandiates = new List<int>();
-        int spawnRange = 0;
-
-        for (int i = 0; i < _inputGhostDistanceSize; i++)
-        {
-            float rating = _inputGhostDistance[i];
-            bool isOutOfBounce = rating == float.PositiveInfinity;
-           // bool couldBeFitting = float.IsNaN(rating);
-
-            if (isOutOfBounce && FilerOutOfBounce)
-            {
-                reposCandiates.Add(i);
-                continue;
-            }
-
-            if (rating < FilterValueRatingGood)
-            {
-                spawnCandiates.Add(i);
-                ++spawnRange;
-            }
-            else if (rating > FilterValueRatingBad && FilterTooFarAway)
-            {
-                reposCandiates.Add(i);
-            }
-        }
-
-        if (spawnRange > 0)
-        {
-            foreach (int index in reposCandiates)
-            {
-                int spawnIndex = Random.Range(0, spawnRange - 1);
-                int spawnID = spawnCandiates[spawnIndex];
-
-                GhostController ghostNonHit = cs.ghosts[index];
-                GhostController spawnCadidatPos = cs.ghosts[spawnID];
-
-                SpawnAroundGhost(ghostNonHit, spawnCadidatPos, 2.5f);
-            }
-        }
-
-      
-
-        spawnCandiates.Clear();
-        reposCandiates.Clear();*/
     }
 
     private void MoveObjects()
@@ -281,11 +221,11 @@ public class ParticleFilterBitPaw
         if (shouldTurn)
         {
             float degrees = 90f * Time.deltaTime;
-            // cs.robot.Rotate(degrees);
-        
+   
             Vector3 oldscaling = transform.localScale;
             transform.localScale = new Vector3(1, 1, 1);
-            transform.Rotate(0, degrees, 0);
+            //transform.Rotate(0, degrees, 0);
+            cs.robot.Rotate(degrees);
             transform.localScale = oldscaling;
 
             cs.ghosts.ForEach(g => g.Rotate(degrees));
@@ -295,7 +235,7 @@ public class ParticleFilterBitPaw
             float distance = 20f * Time.deltaTime;
             Vector3 oldscaling = transform.localScale;
             transform.localScale = new Vector3(1, 1, 1);
-            
+
             cs.robot.Move(distance, cs.robot.MaxForward);
             cs.ghosts.ForEach(g => g.Move(distance*0.13f));
 
@@ -344,13 +284,39 @@ public class ParticleFilterBitPaw
 #region [Limbo-Garbage]
 /*
  * 
- 
+ * 
+ * 
+        /*
+               float standardDeviation = QuickMaths.StandardDeviationCalculate(_inputGhostDistance, _inputGhostDistanceSize, avrage);
+      
+
+        for (int i = 0; i < _inputGhostDistanceSize; i++)
+        {
+            float inputGhostDisctance = _inputGhostDistance[i];
+
+            if (inputGhostDisctance == float.PositiveInfinity) // OutOfBounce
+            {
+                continue; // Skip to next check
+            }
+
+            if (inputGhostDisctance < FilterValueMinimalValue && HandleGhostWallCollisionAsOutOfBounce) // Robot can only messure above 1 (size of Robot)[]Min distance
+            {
+                _inputGhostDistance[i] = float.PositiveInfinity; // handle sameway as outofbounce
+                continue;
+            }
+
+            float distrubution = QuickMaths.NormalDistribution(inputRobotDistance, inputGhostDisctance, standardDeviation);
+            float calc = Mathf.Abs(distrubution);
+
+            _inputGhostDistance[i] = calc; // Save      
+        }* /
 
 
 
 
 
-  float wallDistanceRobot = cs.robot.Scan();
+
+float wallDistanceRobot = cs.robot.Scan();
         int wallDistanceGhostListSize = cs.ghosts.Count;
         float[] wallDistanceGhostList = new float[wallDistanceGhostListSize];
 
