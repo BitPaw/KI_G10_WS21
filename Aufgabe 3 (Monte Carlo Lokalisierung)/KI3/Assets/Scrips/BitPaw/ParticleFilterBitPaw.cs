@@ -190,7 +190,7 @@ public class ParticleFilterBitPaw
         if (TotalScore >= 0.80f)
         {
             Debug.Log("Finsihed");
-            Debug.Break();
+           // Debug.Break();
         }     
 
         if (spawnRange > 0)
